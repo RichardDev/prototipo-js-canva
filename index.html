@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+
+<meta charset="UTF-8">
+<title>Vó Pacman</title>
+
+<style>
+
+body{
+    margin:0;
+    background:#111;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+}
+
+canvas{
+
+    background:#000;
+    border:4px solid #FFD700;
+    image-rendering:pixelated;
+    image-rendering:crisp-edges;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<canvas id="game" width="640" height="480"></canvas>
+
+<script>
+
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+ctx.imageSmoothingEnabled = false;
+
+const keys = {};
+
+window.addEventListener("keydown",e=>{
+    keys[e.key]=true;
+});
+
+window.addEventListener("keyup",e=>{
+    keys[e.key]=false;
+});
+
+class Player{
+
+    constructor(x,y,sprite){
+
+        this.x=x;
+        this.y=y;
+
+        this.width=64;
+        this.height=64;
+
+        this.speed=2;
+
+        this.sprite=sprite;
+
+        this.frame=0;
+        this.frameTimer=0;
+
+        this.direction="down";
+
+        this.moving=false;
+
+    }
+
+    update(){
+
+        let moving=false;
+
+        if(keys["ArrowUp"]){
+
+            this.y-=this.speed;
+            this.direction="up";
+            moving=true;
+
+        }
+
+        if(keys["ArrowDown"]){
+
+            this.y+=this.speed;
+            this.direction="down";
+            moving=true;
+
+        }
+
+        if(keys["ArrowLeft"]){
+
+            this.x-=this.speed;
+            this.direction="left";
+            moving=true;
+
+        }
+
+        if(keys["ArrowRight"]){
+
+            this.x+=this.speed;
+            this.direction="right";
+            moving=true;
+
+        }
+
+        this.moving=moving;
+
+        if(moving){
+
+            this.frameTimer++;
+
+            if(this.frameTimer>8){
+
+                this.frame++;
+
+                if(this.frame>3)
+                    this.frame=0;
+
+                this.frameTimer=0;
+
+            }
+
+        }else{
+
+            this.frame=0;
+
+        }
+
+        // Limites da tela
+
+        if(this.x<0) this.x=0;
+        if(this.y<0) this.y=0;
+
+        if(this.x>canvas.width-this.width)
+            this.x=canvas.width-this.width;
+
+        if(this.y>canvas.height-this.height)
+            this.y=canvas.height-this.height;
+
+    }
+
+    draw(){
+
+    const cols = 4;
+    const rows = 4;
+
+    const frameWidth  = this.sprite.width / cols;
+    const frameHeight = this.sprite.height / rows;
+
+    const directionRow = {
+        down:0,
+        left:1,
+        right:2,
+        up:3
+    };
+
+    const row = directionRow[this.direction];
+
+    ctx.drawImage(
+        this.sprite,
+
+        this.frame * frameWidth,
+        row * frameHeight,
+
+        frameWidth,
+        frameHeight,
+
+        this.x,
+        this.y,
+
+        this.width,
+        this.height
+    );
+   
+   }
+}
+   
+
+const sprite = new Image();
+sprite.src="vovo.jpeg";
+
+let player;
+
+sprite.onload=function(){
+
+    player = new Player(300,220,sprite);
+
+    gameLoop();
+
+}
+
+function desenharGrade(){
+
+    ctx.strokeStyle="#222";
+
+    for(let x=0;x<640;x+=32){
+
+        ctx.beginPath();
+        ctx.moveTo(x,0);
+        ctx.lineTo(x,480);
+        ctx.stroke();
+
+    }
+
+    for(let y=0;y<480;y+=32){
+
+        ctx.beginPath();
+        ctx.moveTo(0,y);
+        ctx.lineTo(640,y);
+        ctx.stroke();
+
+    }
+
+}
+
+function gameLoop(){
+
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    desenharGrade();
+
+    player.update();
+
+    player.draw();
+
+    requestAnimationFrame(gameLoop);
+
+}
+
+</script>
+
+</body>
+</html>
